@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -52,7 +53,7 @@ public class DictionaryTest {
 		testReload();
 		List<Character> charArrays = Configuration.MAPPING.get('5');
 		
-		WordSet wordSet = dict.getWordSet(charArrays, 5);
+		TreeSet<AbstractWord> wordSet = dict.getWordSet(charArrays, 5);
 		
 		logger.info("Dictionary contents is: \n" + wordSet);
 	}

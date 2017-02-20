@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.wojtekhejna.Configuration;
 import com.wojtekhejna.model.Dictionary;
 import com.wojtekhejna.model.Number;
 
@@ -20,7 +21,9 @@ public class EncoderServiceTest {
 	@Parameters
 	public static Collection<Object[][]> data() {
 		return Arrays.asList(new Object[][][] { { { "5624-82" }, { "mir Tor", "Mix Tor" } },
-				{ { "5624-82" }, { "mir Tor", "Mix Tor" } } });
+				{ { "5624-82" }, { "mir Tor", "Mix Tor" } }, { { "4824" }, { "fort", "Tor 4", "Torf" } },
+				{ { "04824" }, { "0 fort", "0 Tor 4", "0 Torf" } },
+				{ { "10/783--5" }, { "je Bo\" da", "je bo\"s 5", "neu o\"d 5" } } });
 	}
 
 	public static Logger logger = Logger.getLogger(EncoderServiceTest.class);
@@ -40,19 +43,30 @@ public class EncoderServiceTest {
 
 		EncoderService encoder = new EncoderServiceImpl(dict);
 
-		logger.debug("The expected result is \n" + getTheFinalAnswer());
+		String result = encoder.encode(new Number(number.toString().toCharArray()));
 
-		assertEquals(getTheFinalAnswer(), encoder.encode(new Number(number.toString())));
+		logger.debug("The expected result is \n" + getTheFinalAnswer());
+		logger.debug("The returned result is \n" + result);
+
+		assertEquals(getTheFinalAnswer(), result);
 
 	}
 
 	private String getTheFinalAnswer() {
 		StringBuffer buf = new StringBuffer();
+
+		int index = -1;
+
 		for (Object s : words) {
+
+			++index;
+
 			buf.append(number.toString());
 			buf.append(": ");
 			buf.append(s.toString());
-			buf.append("\n");
+			if (index < words.length - 1) {
+				buf.append(Configuration.NEW_LINE);
+			}
 		}
 		return buf.toString();
 

@@ -16,15 +16,18 @@ import com.wojtekhejna.Configuration;
 import com.wojtekhejna.exceptions.InvalidDigitException;
 
 public class Dictionary {
-	private Map<Integer, WordSet> wordMap;
+	private Map<Integer, TreeSet<AbstractWord>> wordMap;
 	private String path;
 	private int size;
+
+	public Dictionary() {
+	}
 
 	public Dictionary(String path) {
 		this.path = path;
 	}
 
-	public Dictionary(Map<Integer, WordSet> wordMap) {
+	public Dictionary(Map<Integer, TreeSet<AbstractWord>> wordMap) {
 		this.wordMap = wordMap;
 	}
 
@@ -35,13 +38,14 @@ public class Dictionary {
 		try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
 			String line;
 			while ((line = br.readLine()) != null) {
-				AbstractWord word = new Word(line);
+				AbstractWord word = new Word(line.toCharArray());
 				int length = word.getText().length;
 
 				if (wordMap.containsKey(length)) {
 					wordMap.get(length).add(word);
 				} else {
-					WordSet words = new WordSet(WordComparator.getComparator(WordComparator.LEVEL_ZERO));
+					TreeSet<AbstractWord> words = new TreeSet<AbstractWord>(
+							WordComparator.getComparator(WordComparator.LEVEL_ZERO));
 					words.add(word);
 
 					wordMap.put(length, words);
@@ -63,22 +67,23 @@ public class Dictionary {
 		return size;
 	}
 
-	public Map<Integer, WordSet> getWordMap() {
+	public Map<Integer, TreeSet<AbstractWord>> getWordMap() {
 		return wordMap;
 	}
 
-	public WordSet getWordSet(List<Character> firstChars, int maxLength) {
-		WordSet wordSet = new WordSet(WordComparator.getComparator(WordComparator.LEVEL_ZERO));
+	public TreeSet<AbstractWord> getWordSet(List<Character> firstChars, int maxLength) {
+		TreeSet<AbstractWord> wordSet = new TreeSet<AbstractWord>(
+				WordComparator.getComparator(WordComparator.LEVEL_ZERO));
 
 		// get only those words that are not too long
 		for (int i = 1; i <= maxLength; ++i) {
-			WordSet tempSet = wordMap.get(i);
+			TreeSet<AbstractWord> tempSet = wordMap.get(i);
 
 			if (tempSet != null) {
 				// filter the tempSet according to the requested letters
 				for (Character c : firstChars) {
-					wordSet.addAll(tempSet.subSet(new Word(c.toString()), true,
-							new Word(String.valueOf((char) (c + 1))), false));
+					wordSet.addAll(tempSet.subSet(new Word(new char[] { c }), true,
+							new Word(new char[] { (char) (c + 1) }), false));
 				}
 			}
 		}
@@ -86,20 +91,36 @@ public class Dictionary {
 		return wordSet;
 	}
 
+	public void addWord(AbstractWord w) {
+		int length = w.getLength();
+
+		if (wordMap.containsKey(length)) {
+			wordMap.get(length).add(w);
+		} else {
+			TreeSet<AbstractWord> words = new TreeSet<AbstractWord>(
+					WordComparator.getComparator(WordComparator.LEVEL_ZERO));
+			words.add(w);
+
+			wordMap.put(length, words);
+		}
+		this.size++;
+	}
+
 	@Override
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
 
-		Iterator<WordSet> it = wordMap.values().iterator();
+		Iterator<TreeSet<AbstractWord>> it = wordMap.values().iterator();
 
 		while (it.hasNext()) {
 			Iterator<AbstractWord> it2 = it.next().iterator();
 			while (it2.hasNext()) {
-				buf.append(it2.next().getOriginalText());
+				buf.append(it2.next().getOrigText());
 				buf.append("\n");
 			}
 		}
 
 		return buf.toString();
 	}
+
 }

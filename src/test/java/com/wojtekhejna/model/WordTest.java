@@ -14,23 +14,33 @@ import org.apache.log4j.Logger;
 @RunWith(Parameterized.class)
 public class WordTest {
 	@Parameters
-	public static Collection<String> data() {
-		return Arrays.asList(new String[] { "testWord", "t\"est\"Word" });
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] { { "t\"est\"Word", "TESTWORD" } });
 	}
 
 	public static Logger logger = Logger.getLogger(WordTest.class);
-	private String text;
+	private String inputText;
+	private String expectedText;
 
-	public WordTest(String text) {
-		this.text = text;
+	public WordTest(String inputText, String expectedText) {
+		this.inputText = inputText;
+		this.expectedText = expectedText;
 	}
 
 	@Test
 	public void testGetOriginalText() {
-		Word word = new Word(text);
-		
-		logger.debug("My original text was " + word.getOriginalText());
-		
-		assertEquals(text, word.getOriginalText());
+
+		Word word = new Word(inputText.toCharArray());
+
+		logger.debug("My original text was " + String.valueOf(word.getOrigText()));
+
+		assertEquals(expectedText, String.valueOf(word.getText()));
+	}
+
+	@Test
+	public void testGetLengthText() {
+
+		Word word = new Word(inputText.toCharArray());
+		assertEquals(expectedText.length(), word.getLength());
 	}
 }
