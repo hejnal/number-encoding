@@ -1,6 +1,8 @@
 package com.wojtekhejna.service;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 
 import com.wojtekhejna.Configuration;
@@ -31,44 +33,57 @@ public class EncoderServiceImpl implements EncoderService {
 		int remainingLength = number.getText().length;
 		int currentLevel = 0;
 
+		// load the partial set for the first digit
+
 		partialSet = dict.getWordSet(Configuration.MAPPING.get(number.getText()[currentLevel]), remainingLength);
 
-		for (char digit : number.getText()) {
+		// if there is no item from the very first iteration
+		if (partialSet.size() == 0) {
+			AbstractWord nw = new CompoundWord(new char[] { number.getText()[currentLevel] });
+			partialSet.add(nw);
+		}
+
+		// start checking from the second position (the first is already
+		// validated)
+		for (int i = 1; i < number.getLength(); ++i) {
+
+			currentLevel = i;
+			remainingLength = number.getLength() - i;
+
+			char digit = number.getText()[i];
 
 			Iterator<AbstractWord> it = partialSet.iterator();
 
 			TreeSet<AbstractWord> loadedSet = null;
-			TreeSet<AbstractWord> finishedWords = null;
+			List<AbstractWord> finishedWords = null;
 
+			// iterate through the partial set
 			while (it.hasNext()) {
 				AbstractWord w = it.next();
 
 				// check out if the word is not finished
 				// checked after the first iteration
-				if (currentLevel <= number.getLength() - 1 && w != null && w.getLength() == currentLevel) {
+				if (w.getLength() == currentLevel && currentLevel < number.getLength()) {
 					// load the set of new words
 					if (finishedWords == null) {
-						finishedWords = new TreeSet<>(WordComparator.getComparator(WordComparator.LEVEL_ZERO));
+						finishedWords = new ArrayList<>();
 					}
 					finishedWords.add(w);
 					it.remove();
-				} else {
-					if (w.getLength() - 1 >= currentLevel) {
-						char c = w.getText()[currentLevel];
+				} // filter the resuls that are invalid
+				else {
 
-						if (Character.isDigit(c) && c != digit || Configuration.REVERSE_MAPPING.get(c) != digit) {
-							it.remove();
-							w = null;
-						}
+					char c = w.getText()[currentLevel];
+
+					// remove the word if the mapping is invalid, or if the one
+					// single digit is not the correct one (it should not
+					// happen)
+					if (Configuration.REVERSE_MAPPING.get(c) != digit || (Character.isDigit(c) && c != digit)) {
+						it.remove();
+						w = null;
 					}
 
 				}
-			}
-
-			// if there is no item from the very first iteration
-			if (currentLevel == 0 && partialSet.size() == 0 && finishedWords == null) {
-				AbstractWord nw = new CompoundWord(new char[] { digit });
-				partialSet.add(nw);
 			}
 
 			// check if we need to combine the results with the new entries
@@ -95,7 +110,7 @@ public class EncoderServiceImpl implements EncoderService {
 							}
 							AbstractWord nw = new CompoundWord(b.toString().toCharArray());
 							partialSet.add(nw);
-						} 
+						}
 					} else {
 						for (AbstractWord w2 : loadedSet) {
 							StringBuffer b = new StringBuffer();
@@ -110,13 +125,12 @@ public class EncoderServiceImpl implements EncoderService {
 				}
 			}
 
-			// no options are to get the word encoded
+			// no options are to get the word encoded (after trying to add the
+			// digit or loading the data from the dictionary)
 			if (partialSet.size() == 0) {
 				break;
 			}
 
-			++currentLevel;
-			--remainingLength;
 		}
 		return formatTheOutputEncoding(number);
 
@@ -127,30 +141,32 @@ public class EncoderServiceImpl implements EncoderService {
 
 		StringBuffer buf = new StringBuffer();
 
-		int index = -1;
+		if (partialSet.size() > 0) {
+			int index = -1;
 
-		while (it.hasNext()) {
+			while (it.hasNext()) {
 
-			buf.append(n.getOrigText());
-			buf.append(Configuration.COLON);
-			buf.append(Configuration.SPACE);
-			
-			index++;
-			
-			AbstractWord w = it.next();
-			
-			buf.append(w.getOrigText());
-			
-			if (index < partialSet.size() - 1) {
-				buf.append(Configuration.NEW_LINE);
+				buf.append(n.getOrigText());
+				buf.append(Configuration.COLON);
+				buf.append(Configuration.SPACE);
+
+				index++;
+
+				AbstractWord w = it.next();
+
+				buf.append(w.getOrigText());
+
+				if (index < partialSet.size() - 1) {
+					buf.append(Configuration.NEW_LINE);
+				}
 			}
-		} 
 
-		// if no encoding could be possible
-		if (partialSet.size() == 0) {
-			buf.append(n.getOrigText());
-			buf.append(Configuration.COLON);
-			buf.append(Configuration.SPACE);
+			// if no encoding could be possible
+			if (partialSet.size() == 0) {
+				buf.append(n.getOrigText());
+				buf.append(Configuration.COLON);
+				buf.append(Configuration.SPACE);
+			}
 		}
 
 		return buf.toString();

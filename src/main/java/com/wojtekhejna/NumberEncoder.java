@@ -27,12 +27,14 @@ public class NumberEncoder {
 
 			in = new FileReader(new File(classLoader.getResource("input.txt").getFile()));
 			br = new BufferedReader(in);
-			
+
 			String line = br.readLine();
 			while (line != null) {
 				String result = encoder.encode(new Number(line.toCharArray()));
 				line = br.readLine();
-				System.out.println(result);
+				if (!"".equals(result)) {
+					System.out.println(result);
+				}
 			}
 		} finally {
 			if (in != null) {

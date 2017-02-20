@@ -24,7 +24,7 @@ public class EncoderServiceTest {
 				{ { "5624-82" }, { "mir Tor", "Mix Tor" } }, { { "4824" }, { "fort", "Tor 4", "Torf" } },
 				{ { "04824" }, { "0 fort", "0 Tor 4", "0 Torf" } },
 				{ { "10/783--5" }, { "je Bo\" da", "je bo\"s 5", "neu o\"d 5" } },
-				{{"-8\\/12188169241-76"},{""}}});
+				{ { "-8\\/12188169241-76" }, { "" } } });
 	}
 
 	public static Logger logger = Logger.getLogger(EncoderServiceTest.class);
@@ -40,7 +40,7 @@ public class EncoderServiceTest {
 	@Test
 	public void testEncode() {
 		Dictionary dict = new Dictionary("dictionary.txt");
-		
+
 		assertTrue(dict.reload());
 
 		EncoderService encoder = new EncoderServiceImpl(dict);
@@ -63,11 +63,13 @@ public class EncoderServiceTest {
 
 			++index;
 
-			buf.append(number.toString());
-			buf.append(": ");
-			buf.append(s.toString());
-			if (index < words.length - 1) {
-				buf.append(Configuration.NEW_LINE);
+			if (!"".equals(s.toString())) {
+				buf.append(number.toString());
+				buf.append(": ");
+				buf.append(s.toString());
+				if (index < words.length - 1) {
+					buf.append(Configuration.NEW_LINE);
+				}
 			}
 		}
 		return buf.toString();
