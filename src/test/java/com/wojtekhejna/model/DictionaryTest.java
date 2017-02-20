@@ -20,7 +20,7 @@ import com.wojtekhejna.Configuration;
 public class DictionaryTest {
 	@Parameters
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] { { "src/test/resources/dictionary.txt", 23 } });
+		return Arrays.asList(new Object[][] { { "dictionary.txt", 23 } });
 	}
 
 	public static Logger logger = Logger.getLogger(DictionaryTest.class);

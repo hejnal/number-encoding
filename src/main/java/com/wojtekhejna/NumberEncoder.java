@@ -1,10 +1,9 @@
 package com.wojtekhejna;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-
-import org.apache.log4j.Logger;
 
 import com.wojtekhejna.model.Dictionary;
 import com.wojtekhejna.model.Number;
@@ -13,27 +12,27 @@ import com.wojtekhejna.service.EncoderServiceImpl;
 
 public class NumberEncoder {
 
-	public static Logger logger = Logger.getLogger(NumberEncoder.class);
-
 	public static void main(String... args) throws IOException {
 
-		Dictionary dict = new Dictionary("src/main/resources/dictionary.txt");
+		Dictionary dict = new Dictionary("dictionary.txt");
 
 		dict.reload();
-		
+
 		EncoderService encoder = new EncoderServiceImpl(dict);
 
 		FileReader in = null;
 		BufferedReader br = null;
 		try {
-			in = new FileReader("src/main/resources/input.txt");
+			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+			in = new FileReader(new File(classLoader.getResource("input.txt").getFile()));
 			br = new BufferedReader(in);
+			
 			String line = br.readLine();
 			while (line != null) {
-				System.out.println(line);
 				String result = encoder.encode(new Number(line.toCharArray()));
 				line = br.readLine();
-				logger.debug("The returned result is \n" + result);
+				System.out.println(result);
 			}
 		} finally {
 			if (in != null) {

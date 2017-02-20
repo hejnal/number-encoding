@@ -35,7 +35,11 @@ public class Dictionary {
 
 		wordMap = new HashMap<>();
 
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+		try (BufferedReader br = new BufferedReader(
+				new FileReader(new File(classLoader.getResource(path).getFile())))) {
+			
 			String line;
 			while ((line = br.readLine()) != null) {
 				AbstractWord word = new Word(line.toCharArray());

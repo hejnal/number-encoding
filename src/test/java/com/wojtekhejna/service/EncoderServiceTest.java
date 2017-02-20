@@ -23,7 +23,8 @@ public class EncoderServiceTest {
 		return Arrays.asList(new Object[][][] { { { "5624-82" }, { "mir Tor", "Mix Tor" } },
 				{ { "5624-82" }, { "mir Tor", "Mix Tor" } }, { { "4824" }, { "fort", "Tor 4", "Torf" } },
 				{ { "04824" }, { "0 fort", "0 Tor 4", "0 Torf" } },
-				{ { "10/783--5" }, { "je Bo\" da", "je bo\"s 5", "neu o\"d 5" } } });
+				{ { "10/783--5" }, { "je Bo\" da", "je bo\"s 5", "neu o\"d 5" } },
+				{{"-8\\/12188169241-76"},{""}}});
 	}
 
 	public static Logger logger = Logger.getLogger(EncoderServiceTest.class);
@@ -38,7 +39,8 @@ public class EncoderServiceTest {
 
 	@Test
 	public void testEncode() {
-		Dictionary dict = new Dictionary("src/test/resources/dictionary.txt");
+		Dictionary dict = new Dictionary("dictionary.txt");
+		
 		assertTrue(dict.reload());
 
 		EncoderService encoder = new EncoderServiceImpl(dict);

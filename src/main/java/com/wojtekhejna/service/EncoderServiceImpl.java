@@ -53,18 +53,20 @@ public class EncoderServiceImpl implements EncoderService {
 					finishedWords.add(w);
 					it.remove();
 				} else {
-					char c = w.getText()[currentLevel];
+					if (w.getLength() - 1 >= currentLevel) {
+						char c = w.getText()[currentLevel];
 
-					if (Character.isDigit(c) && c != digit || Configuration.REVERSE_MAPPING.get(c) != digit) {
-						it.remove();
-						w = null;
+						if (Character.isDigit(c) && c != digit || Configuration.REVERSE_MAPPING.get(c) != digit) {
+							it.remove();
+							w = null;
+						}
 					}
 
 				}
 			}
-			
+
 			// if there is no item from the very first iteration
-			if (partialSet.size() == 0 && finishedWords == null) {
+			if (currentLevel == 0 && partialSet.size() == 0 && finishedWords == null) {
 				AbstractWord nw = new CompoundWord(new char[] { digit });
 				partialSet.add(nw);
 			}
@@ -81,17 +83,19 @@ public class EncoderServiceImpl implements EncoderService {
 					AbstractWord w = it2.next();
 
 					// we need to add the digit
-					if (loadedSet.size() == 0 && currentLevel > 0
-							&& !Character.isDigit(w.getText()[currentLevel - 1])) {
-						StringBuffer b = new StringBuffer();
-						b.append(w.getOrigText());
-						b.append(Configuration.SPACE);
-						b.append(digit);
-						if (currentLevel < number.getLength() - 1) {
+					if (loadedSet.size() == 0 && currentLevel > 0) {
+
+						if (!Character.isDigit(w.getText()[currentLevel - 1])) {
+							StringBuffer b = new StringBuffer();
+							b.append(w.getOrigText());
 							b.append(Configuration.SPACE);
-						}
-						AbstractWord nw = new CompoundWord(b.toString().toCharArray());
-						partialSet.add(nw);
+							b.append(digit);
+							if (currentLevel < number.getLength() - 1) {
+								b.append(Configuration.SPACE);
+							}
+							AbstractWord nw = new CompoundWord(b.toString().toCharArray());
+							partialSet.add(nw);
+						} 
 					} else {
 						for (AbstractWord w2 : loadedSet) {
 							StringBuffer b = new StringBuffer();
@@ -102,7 +106,13 @@ public class EncoderServiceImpl implements EncoderService {
 							partialSet.add(nw);
 						}
 					}
+
 				}
+			}
+
+			// no options are to get the word encoded
+			if (partialSet.size() == 0) {
+				break;
 			}
 
 			++currentLevel;
@@ -121,17 +131,26 @@ public class EncoderServiceImpl implements EncoderService {
 
 		while (it.hasNext()) {
 
-			index++;
-
-			AbstractWord w = it.next();
 			buf.append(n.getOrigText());
 			buf.append(Configuration.COLON);
 			buf.append(Configuration.SPACE);
+			
+			index++;
+			
+			AbstractWord w = it.next();
+			
 			buf.append(w.getOrigText());
-
+			
 			if (index < partialSet.size() - 1) {
 				buf.append(Configuration.NEW_LINE);
 			}
+		} 
+
+		// if no encoding could be possible
+		if (partialSet.size() == 0) {
+			buf.append(n.getOrigText());
+			buf.append(Configuration.COLON);
+			buf.append(Configuration.SPACE);
 		}
 
 		return buf.toString();
